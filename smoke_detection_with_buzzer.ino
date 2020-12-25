@@ -10,8 +10,10 @@ const int flamePin = 9;
 int Flame = LOW;
 
 void setup() {
+  
   pinMode(redLed, OUTPUT);
   pinMode(greenLed, OUTPUT);
+  
   pinMode(buzzer, OUTPUT);
   pinMode(smokeA0, INPUT);
  
@@ -21,6 +23,15 @@ void setup() {
 }
 
 void loop() {
+  
+  checkForGasOrSmoke();
+
+//  delay(100);
+ 
+  checkForFlames();
+}
+
+void checkForGasOrSmoke(){
   
   int analogSensor = analogRead(smokeA0);
 
@@ -39,11 +50,10 @@ void loop() {
     digitalWrite(greenLed, HIGH);
     noTone(buzzer);
   }
+}
 
-//  delay(100);
-
-
-  // FIRE SENSOR 
+void checkForFlames(){
+   // FIRE SENSOR 
   Flame = digitalRead(flamePin);
   
   if (Flame== HIGH)

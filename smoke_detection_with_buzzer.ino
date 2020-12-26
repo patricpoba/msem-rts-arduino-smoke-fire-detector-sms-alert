@@ -53,6 +53,11 @@ void printOnLcd(String text, int line = 1){
   Serial.println(text);
 }
 
+void sendAlert(String fireOrSmoke){
+  String alertMessage = "SENDING SMS alert for  . . . ";
+  Serial.println( alertMessage += fireOrSmoke);
+}
+
 void loop() {
   
   checkForGasOrSmoke();
@@ -80,6 +85,7 @@ void checkForGasOrSmoke(){
     digitalWrite(redLed, HIGH);
     digitalWrite(greenLed, LOW);
     tone(buzzer, 1000, 200);
+    sendAlert("SMOKE");
   }
   else
   { 
@@ -104,6 +110,7 @@ void checkForFlames(){
     digitalWrite(buzzer, HIGH);
     digitalWrite(redLed, HIGH);
     digitalWrite(greenLed, LOW);
+    sendAlert("FIRE");
   }
   else
   { 

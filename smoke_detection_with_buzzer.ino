@@ -96,9 +96,10 @@ void checkForGasOrSmoke(){
 }
 
 void checkForFlames(){
+  int flameSensorReading = analogRead(A0);
 
   String lcdText = "Fire level: ";
-  printOnLcd(lcdText,2);
+  printOnLcd(lcdText += flameSensorReading ,2);
   
    // FIRE SENSOR 
   Flame = digitalRead(flamePin);

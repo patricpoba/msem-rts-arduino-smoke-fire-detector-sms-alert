@@ -30,6 +30,7 @@ void setup() {
   lcd.begin(); 
   lcd.backlight();
   lcd.print("Starting ..."); 
+  delay(1000);
 }
 
 void clearLcdScreen(int line = 1){
@@ -61,9 +62,8 @@ void sendAlert(String fireOrSmoke){
 void loop() {
   
   checkForGasOrSmoke();
-
-  // tone(buzzer, 1000, 200);
-  delay(500);
+ 
+//  delay(500);
  
   checkForFlames();
 }
@@ -71,9 +71,7 @@ void loop() {
 void checkForGasOrSmoke(){
 //  tone(buzzer, 1000, 200);
   int analogSensor = analogRead(smokeA0);
-
-//  Serial.print("Pin A0: ");
-//  Serial.println(analogSensor);
+ 
   String lcdText = "Gas/Smoke: ";
   printOnLcd(lcdText += analogSensor);
   
@@ -85,12 +83,14 @@ void checkForGasOrSmoke(){
     digitalWrite(redLed, HIGH);
     digitalWrite(greenLed, LOW);
     tone(buzzer, 1000, 200);
+//    digitalWrite(buzzer, HIGH);
     sendAlert("SMOKE");
   }
   else
   { 
     digitalWrite(redLed, LOW);
-    digitalWrite(greenLed, HIGH);
+    digitalWrite(greenLed, HIGH); 
+//    digitalWrite(buzzer, LOW);
     noTone(buzzer);
   }
 }

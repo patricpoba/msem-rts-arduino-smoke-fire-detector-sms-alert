@@ -32,16 +32,20 @@ void setup() {
   lcd.print("Starting ..."); 
 }
 
-
-void printOnLcd(String text, int line = 1){
-  
-  // line numbering starts with zero
-  line = line -1 ; 
-  lcd.setCursor(0,line);
+void clearLcdScreen(int line = 1){
+  // line numbering starts with zero 
+  lcd.setCursor(0,line - 1);
 
   // print 16 spaces to clear existing text on specified line
   lcd.print("                "); 
+}
 
+void printOnLcd(String text, int line = 1){
+
+  clearLcdScreen(line);
+  
+  // line numbering starts with zero
+  line = line -1 ;  
   lcd.setCursor(0,line);
   lcd.print( text );
 
@@ -71,15 +75,14 @@ void checkForGasOrSmoke(){
   // Checks if it has reached the threshold value
   if (analogSensor > smokeSensorThreshold)
   {
-    printOnLcd("SMOKE DECTECTED!", 2);
+    printOnLcd("SMOKE DECTECTED!");
     
     digitalWrite(redLed, HIGH);
     digitalWrite(greenLed, LOW);
     tone(buzzer, 1000, 200);
   }
   else
-  {
-    printOnLcd("                ", 2);
+  { 
     digitalWrite(redLed, LOW);
     digitalWrite(greenLed, HIGH);
     noTone(buzzer);
@@ -87,17 +90,23 @@ void checkForGasOrSmoke(){
 }
 
 void checkForFlames(){
+
+  String lcdText = "Fire level: ";
+  printOnLcd(lcdText,2);
+  
    // FIRE SENSOR 
   Flame = digitalRead(flamePin);
   
   if (Flame== HIGH)
   {
+    printOnLcd("FIRE DECTECTED!", 2); 
+    
     digitalWrite(buzzer, HIGH);
     digitalWrite(redLed, HIGH);
     digitalWrite(greenLed, LOW);
   }
   else
-  {
+  { 
     digitalWrite(buzzer, LOW);
     digitalWrite(greenLed, HIGH);
     digitalWrite(redLed, LOW);

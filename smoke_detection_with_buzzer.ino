@@ -66,8 +66,8 @@ void printOnLcd(String text, int line = 1){
   lcd.print( text );
 
   // for debugging purposes, remove befor final presentation
-   delay(1500);
-  Serial.println(text);
+//   delay(1500);
+//  Serial.println(text);
 }
 
 
@@ -87,7 +87,7 @@ void updateSerial()
 
 void sendAlert(String fireOrSmoke){
    
-//  wdt_reset();
+  wdt_reset();
 //  delay(5000);
   unsigned long currentTime = millis(); 
   if( (smsPreviousTime == 0) || (currentTime - smsPreviousTime >= smsEventInterval) ){
@@ -139,13 +139,13 @@ void checkForGasOrSmoke(){
   // Checks if it has reached the threshold value
   if (analogSensor > smokeSensorThreshold)
   {
-    printOnLcd("SMOKE DECTECTED!");
+    printOnLcd("SMOKE/GAS ALERT!");
     
     digitalWrite(redLed, HIGH);
     digitalWrite(greenLed, LOW);
-    tone(buzzer, 1000, 200);
+    tone(buzzer, 1000, 500);
 //  digitalWrite(buzzer, HIGH);
-    sendAlert("SMOKE");
+    sendAlert("SMOKE/GAS");
   }
   else
   { 
@@ -154,6 +154,7 @@ void checkForGasOrSmoke(){
  // digitalWrite(buzzer, LOW);
     noTone(buzzer);
   }
+//  delay(1500);
 }
 
 

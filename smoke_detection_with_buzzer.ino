@@ -7,7 +7,7 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 //Create software serial object to communicate with SIM800L
-SoftwareSerial mySerial(3, 2); //SIM800L Tx & Rx is connected to Arduino #3 & #2
+SoftwareSerial mySerial(5, 4); //SIM800L Tx & Rx is connected to Arduino #5 & #4
 
 const unsigned long smsEventInterval = 10000;
 unsigned long smsPreviousTime = 0;
@@ -133,7 +133,7 @@ void checkForGasOrSmoke(){
 //  tone(buzzer, 1000, 200);
   int analogSensor = analogRead(smokeA0);
  
-  String lcdText = "Gas/Smoke: ";
+  String lcdText = "Gas/Smoke lvl: ";
   printOnLcd(lcdText += analogSensor);
   
   // Checks if it has reached the threshold value

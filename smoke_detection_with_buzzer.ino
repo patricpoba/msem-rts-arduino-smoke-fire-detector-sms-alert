@@ -1,3 +1,4 @@
+#include <avr/wdt.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <SoftwareSerial.h>
@@ -8,12 +9,13 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 //Create software serial object to communicate with SIM800L
 SoftwareSerial mySerial(3, 2); //SIM800L Tx & Rx is connected to Arduino #3 & #2
 
+const unsigned long smsEventInterval = 10000;
+unsigned long smsPreviousTime = 0;
 
 int redLed = 12;
 int greenLed = 11;
 int buzzer = 10;
-int smokeA0 = A3;
-// Your threshold value
+int smokeA0 = A3; 
 int smokeSensorThreshold = 400;
 
 const int flamePin = 9;
@@ -21,13 +23,13 @@ int Flame = LOW;
 
 
 void setup() {
-  
+   
   pinMode(redLed, OUTPUT);
   pinMode(greenLed, OUTPUT);
   
   pinMode(buzzer, OUTPUT);
   pinMode(smokeA0, INPUT);
- 
+
   pinMode(flamePin, INPUT);
   
   Serial.begin(9600);
@@ -39,8 +41,9 @@ void setup() {
   
   //Begin serial communication with Arduino and SIM800L
   mySerial.begin(9600);
-  
-  delay(1000);
+   
+  Serial.println("Starting arduino . . .");
+  wdt_enable(WDTO_8S);
 }
 
 
@@ -63,6 +66,7 @@ void printOnLcd(String text, int line = 1){
   lcd.print( text );
 
   // for debugging purposes, remove befor final presentation
+   delay(1500);
   Serial.println(text);
 }
 
@@ -82,40 +86,46 @@ void updateSerial()
 
 
 void sendAlert(String fireOrSmoke){
-  String alertMessage = " detected in your house!";
-  alertMessage =  fireOrSmoke + alertMessage;
-  Serial.println(alertMessage);
+   
+//  wdt_reset();
+//  delay(5000);
+  unsigned long currentTime = millis(); 
+  if( (smsPreviousTime == 0) || (currentTime - smsPreviousTime >= smsEventInterval) ){
 
-  // send sms
-  Serial.println("Initializing..."); 
-  delay(1000);
+    String alertMessage = " detected in your house!";
+    alertMessage =  fireOrSmoke + alertMessage;
+    Serial.println(alertMessage);
+  
+    // send sms 
+    mySerial.println("AT"); //Once the handshake test is successful, it will back to OK
+    updateSerial();
+  
+    mySerial.println("AT+CMGF=1"); // Configuring TEXT mode
+    updateSerial();
+    mySerial.println("AT+CMGS=\"+491638267508\"");//change 49 with country code and xxxxxxxxxxx with phone number to sms
+    updateSerial();
+    mySerial.print( alertMessage ); //text content
+    updateSerial();
+    mySerial.write(26);
+  
+    mySerial.println("AT"); //Once the handshake test is successful, it will back to OK
+    updateSerial();
 
-  mySerial.println("AT"); //Once the handshake test is successful, it will back to OK
-  updateSerial();
-
-  mySerial.println("AT+CMGF=1"); // Configuring TEXT mode
-  updateSerial();
-  mySerial.println("AT+CMGS=\"+491638267508\"");//change 49 with country code and xxxxxxxxxxx with phone number to sms
-  updateSerial();
-  mySerial.print( alertMessage ); //text content
-  updateSerial();
-  mySerial.write(26);
-
-  mySerial.println("AT"); //Once the handshake test is successful, it will back to OK
-  updateSerial();
-
- //  AT+COPS? – Check that you’re connected to the network, in this case BSNL 
- //  AT+COPS=? – Return the list of operators present in the network
+    smsPreviousTime = currentTime;
+  }else{
+    Serial.println("skipped sending sms");
+  }
+   
 }
 
 
 void loop() {
   
   checkForGasOrSmoke();
- 
-  delay(1000);
- 
+  
   checkForFlames();
+
+  wdt_reset();
 }
 
 
@@ -134,14 +144,14 @@ void checkForGasOrSmoke(){
     digitalWrite(redLed, HIGH);
     digitalWrite(greenLed, LOW);
     tone(buzzer, 1000, 200);
-//    digitalWrite(buzzer, HIGH);
+//  digitalWrite(buzzer, HIGH);
     sendAlert("SMOKE");
   }
   else
   { 
     digitalWrite(redLed, LOW);
     digitalWrite(greenLed, HIGH); 
-//    digitalWrite(buzzer, LOW);
+ // digitalWrite(buzzer, LOW);
     noTone(buzzer);
   }
 }

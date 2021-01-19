@@ -9,7 +9,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 //Create software serial object to communicate with SIM800L
 SoftwareSerial mySerial(5, 4); //SIM800L Tx & Rx is connected to Arduino #5 & #4
 
-const unsigned long smsEventInterval = 10000;
+const unsigned long smsEventInterval = 4000;
 unsigned long smsPreviousTime = 0;
 
 int redLed = 12;
@@ -17,6 +17,7 @@ int greenLed = 11;
 int buzzer = 10;
 int smokeA0 = A3; 
 int smokeSensorThreshold = 400;
+int flameSensorThreshold = 300;
 
 const int flamePin = 9;
 int Flame = LOW;
@@ -37,7 +38,7 @@ void setup() {
   // initialize the LCD and turn on the blacklight.
   lcd.begin(); 
   lcd.backlight();
-  lcd.print("Starting ..."); 
+  lcd.print("Starting ...");  
   
   //Begin serial communication with Arduino and SIM800L
   mySerial.begin(9600);
@@ -63,17 +64,12 @@ void printOnLcd(String text, int line = 1){
   // line numbering starts with zero
   line = line -1 ;  
   lcd.setCursor(0,line);
-  lcd.print( text );
-
-  // for debugging purposes, remove befor final presentation
-//   delay(1500);
-//  Serial.println(text);
+  lcd.print( text );  
 }
 
 
 void updateSerial()
-{
-  delay(500);
+{ 
   while (Serial.available()) 
   {
     mySerial.write(Serial.read());//Forward what Serial received to Software Serial Port
@@ -87,8 +83,8 @@ void updateSerial()
 
 void sendAlert(String fireOrSmoke){
    
-  wdt_reset();
-//  delay(5000);
+  wdt_reset(); 
+  
   unsigned long currentTime = millis(); 
   if( (smsPreviousTime == 0) || (currentTime - smsPreviousTime >= smsEventInterval) ){
 
@@ -133,7 +129,7 @@ void checkForGasOrSmoke(){
 //  tone(buzzer, 1000, 200);
   int analogSensor = analogRead(smokeA0);
  
-  String lcdText = "Gas/Smoke lvl: ";
+  String lcdText = "GasSmoke lv: ";
   printOnLcd(lcdText += analogSensor);
   
   // Checks if it has reached the threshold value
@@ -153,8 +149,7 @@ void checkForGasOrSmoke(){
     digitalWrite(greenLed, HIGH); 
  // digitalWrite(buzzer, LOW);
     noTone(buzzer);
-  }
-//  delay(1500);
+  } 
 }
 
 
@@ -164,10 +159,8 @@ void checkForFlames(){
   String lcdText = "Fire level: ";
   printOnLcd(lcdText += flameSensorReading ,2);
   
-   // FIRE SENSOR 
-  Flame = digitalRead(flamePin);
-  
-  if (Flame== HIGH)
+   // FIRE SENSOR  
+  if (flameSensorReading < flameSensorThreshold )
   {
     printOnLcd("FIRE DECTECTED!", 2); 
     
@@ -177,7 +170,7 @@ void checkForFlames(){
     sendAlert("FIRE");
   }
   else
-  { 
+  {  
     digitalWrite(buzzer, LOW);
     digitalWrite(greenLed, HIGH);
     digitalWrite(redLed, LOW);
